@@ -3,7 +3,7 @@ import PatientList from '../Components/PatientList';
 import { useState } from 'react';
 
 export default function Home() {
-  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [, setSelectedPatient] = useState(null);
 
   return (
     <div>

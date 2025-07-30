@@ -1,14 +1,20 @@
-import { Link } from 'react-router-dom';
 
 export default function Header() {
   return (
-    <nav className="bg-primary text-white p-4">
+    <nav className="bg-blue-400 text-white p-8">
       <div className="container mx-auto flex justify-between items-center">
-        <h1 className="text-xl font-bold">EMR System</h1>
+        <h1 className="text-xl font-bold">Medipro</h1>
         <div className="space-x-4">
-          <Link to="/" className="hover:underline">Home</Link>
-          <Link to="/register" className="hover:underline">Register Patient</Link>
         </div>
+        <button
+          onClick={() => {
+            localStorage.removeItem('access_token');
+            window.location.href = '/login';
+          }}
+          className="ml-4 bg-red-600 text-white px-3 py-1 rounded"
+        >
+          Logout
+        </button>
       </div>
     </nav>
   );

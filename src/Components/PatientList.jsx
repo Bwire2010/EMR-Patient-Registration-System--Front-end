@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getPatients, searchPatients } from '../api/api';
 import Modal from './Modal';
 import PatientForm from './PatientForm';
 import { EyeIcon } from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
 
 export default function PatientList({ onEdit }) {
   const [patients, setPatients] = useState([]);
@@ -10,24 +11,40 @@ export default function PatientList({ onEdit }) {
   const [error, setError] = useState('');
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
 
-  useEffect(() => {
+  // useCallback ensures fetchPatients is stable for useEffect dependencies
+  const fetchPatients = useCallback(() => {
     if (search) {
       searchPatients(search)
-        .then(res => setPatients(res.data.sort((a, b) => b.id - a.id)))
+        .then(res => {
+          const sorted = res.data.results.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+          setPatients(sorted);
+        })
         .catch(err => {
           console.error('Failed to search patients:', err);
           setError('Failed to search patients');
         });
     } else {
-      getPatients()
-        .then(res => setPatients(res.data.sort((a, b) => b.id - a.id)))
+      getPatients(page)
+        .then(res => {
+          const sorted = res.data.results.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+          setPatients(sorted);
+          setHasNext(!!res.data.next);
+          setHasPrevious(!!res.data.previous);
+        })
         .catch(err => {
           console.error('Failed to fetch patients:', err);
           setError('Failed to load patients');
         });
     }
-  }, [search]);
+  }, [search, page]);
+
+  useEffect(() => {
+    fetchPatients();
+  }, [fetchPatients]);
 
   const handleView = (patient) => {
     setSelectedPatient(patient);
@@ -43,23 +60,35 @@ export default function PatientList({ onEdit }) {
   return (
     <div className="bg-card p-6 rounded-lg shadow-md">
       {error && <p className="text-red-500 mb-4">{error}</p>}
-      <div className="mb-4">
+      <div className="mb-8 flex gap-8">
         <input
           type="text"
           placeholder="Search by MRN or Name"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="p-2 w-full border rounded focus:ring focus:ring-primary focus:ring-opacity-50"
+          onChange={(e) => {
+            setPage(1); // reset to page 1 when searching
+            setSearch(e.target.value);
+          }}
+          className="flex-1 p-2 border rounded focus:ring focus:ring-primary focus:ring-opacity-50"
         />
+        <Link
+          to="/register"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+        >
+          Register Patient
+        </Link>
       </div>
+
       <table className="w-full">
         <thead>
           <tr className="bg-secondary text-white">
-            <th className="p-2">MRN</th>
-            <th className="p-2">Name</th>
-            <th className="p-2">Gender</th>
-            <th className="p-2">Facility</th>
-            <th className="p-2">Actions</th>
+            <th className="p-2 text-left">MRN</th>
+            <th className="p-2 text-left">Name</th>
+            <th className="p-2 text-left">Gender</th>
+            <th className="p-2 text-left">Facility</th>
+            <th className="p-2 text-left">Email</th>
+            <th className="p-2 text-left">Phone No.</th>
+            <th className="p-2 text-left">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -69,6 +98,8 @@ export default function PatientList({ onEdit }) {
               <td className="p-2">{`${patient.first_name} ${patient.last_name}`}</td>
               <td className="p-2">{patient.gender}</td>
               <td className="p-2">{patient.facility.name}</td>
+              <td className="p-2">{patient.email}</td>
+              <td className="p-2">{patient.phone}</td>
               <td className="p-2">
                 <button
                   onClick={() => handleView(patient)}
@@ -82,6 +113,27 @@ export default function PatientList({ onEdit }) {
           ))}
         </tbody>
       </table>
+
+      {/* Pagination controls */}
+      {!search && (
+        <div className="mt-4 flex justify-between">
+          <button
+            disabled={!hasPrevious}
+            onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+            className={`px-4 py-2 rounded ${hasPrevious ? 'bg-primary text-white' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
+          >
+            Previous
+          </button>
+          <button
+            disabled={!hasNext}
+            onClick={() => setPage(prev => prev + 1)}
+            className={`px-4 py-2 rounded ${hasNext ? 'bg-primary text-white' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
+          >
+            Next
+          </button>
+        </div>
+      )}
+
       <Modal
         isOpen={isModalOpen}
         onClose={handleModalClose}
@@ -89,7 +141,15 @@ export default function PatientList({ onEdit }) {
       >
         <PatientForm
           patient={selectedPatient}
-          onSubmit={handleModalClose}
+          onSubmit={(updatedPatient) => {
+            if (updatedPatient) {
+              setPatients(prev =>
+                prev.map(p => (p.id === updatedPatient.id ? updatedPatient : p))
+              );
+            } else {
+              fetchPatients();
+            }
+          }}
           viewMode={true}
         />
       </Modal>

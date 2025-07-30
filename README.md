@@ -1,71 +1,104 @@
-# Getting Started with Create React App
+# EMR Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is the frontend for the **Electronic Medical Records (EMR)** system built with **React** and **Tailwind CSS**. It interacts with a Django REST Framework (DRF) backend to manage patient registration, viewing, and updating.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🚀 Features
 
-### `npm start`
+- Register new patients  
+- View and edit existing patient information  
+- Modal-based UI for better experience  
+- Pagination and search  
+- Success/error handling  
+- Responsive UI using Tailwind CSS
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🛠️ Tech Stack
 
-### `npm test`
+- **React** (with Hooks)  
+- **Tailwind CSS**  
+- **Axios** for API requests  
+- **Heroicons** and **Headless UI** for modal and icons  
+- **Django REST Framework** as the backend (running separately)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## 📦 Prerequisites
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Make sure you have the following installed:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Node.js (v18 or later)
+- npm or yarn
+- A running instance of the [EMR Django Backend](https://github.com/Bwire2010/EMR-Patient-Registration-System-Backend)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 🔧 Installation & Setup
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 1. Clone the frontend repository
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+git clone git@github.com:Bwire2010/EMR-Patient-Registration-System--Front-end.git
+cd EMR-Patient-Registration-System--Front-end
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### 2. Install dependencies
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+npm install
+```
 
-## Learn More
+### 3. Configure API endpoint
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Make sure the `BASE_URL` in `src/api/api.js` points to your backend URL:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```js
+const BASE_URL = 'http://127.0.0.1:8000';
+```
 
-### Code Splitting
+### 4. Run the development server
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```bash
+npm start
+```
 
-### Analyzing the Bundle Size
+Visit: [http://localhost:3000](http://localhost:3000)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+---
 
-### Making a Progressive Web App
+## 🔗 Backend Repository
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+To run the backend, clone and follow instructions in this repo:
 
-### Advanced Configuration
+👉 **Backend GitHub:**  
+https://github.com/Bwire2010/EMR-Patient-Registration-System-Backend
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+---
 
-### Deployment
+## ✅ Example Workflow
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+1. Start Django backend:
 
-### `npm run build` fails to minify
+```bash
+python manage.py runserver
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-# EMR-Patient-Registration-System--Front-end
+2. Start React frontend:
+
+```bash
+npm start
+```
+
+3. Open your browser at:
+
+```
+http://localhost:3000
+```
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
