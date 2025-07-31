@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { getFacilities, getServices, createPatient, updatePatient } from '../api/api';
+import { getFacilities, getServices, createPatient, updatePatient, deletePatient } from '../api/api';
 
-export default function PatientForm({ patient, onSubmit, viewMode = true, onClose }) {
+export default function PatientForm({ patient, onSubmit, viewMode = true, onClose, onDelete }) {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -15,7 +15,7 @@ export default function PatientForm({ patient, onSubmit, viewMode = true, onClos
     insurance_number: '',
     facility_id: '',
     service_ids: [],
-    ...(patient ? { mrn: patient.mrn } : {}), // Include mrn only if patient exists
+    ...(patient ? { mrn: patient.mrn } : {}),
   });
   const [facilities, setFacilities] = useState([]);
   const [services, setServices] = useState([]);
@@ -23,6 +23,7 @@ export default function PatientForm({ patient, onSubmit, viewMode = true, onClos
   const [isEditMode, setIsEditMode] = useState(!viewMode);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
 
   useEffect(() => {
@@ -52,7 +53,65 @@ export default function PatientForm({ patient, onSubmit, viewMode = true, onClos
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
- 
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setIsSubmitting(true);
+  //   setError('');
+  //   setSuccessMessage('');
+
+  //   try {
+  //     if (patient) {
+  //       const updatedResponse = await updatePatient(patient.id, formData);
+  //       const updatedPatient = updatedResponse.data.data;
+
+  //       if (updatedResponse.data.code === 200) {
+  //         setFormData({
+  //           ...updatedResponse.data.data,
+  //           facility_id: updatedResponse.data.data.facility.id,
+  //           service_ids: updatedResponse.data.data.services.map(s => s.id),
+  //         });
+  //         setIsEditMode(false);
+  //         setSuccessMessage(updatedResponse.data.message || 'Patient updated successfully.');
+  //         onSubmit(updatedPatient);// added
+  //         // Auto-clear success message after 4 seconds
+  //         setTimeout(() => setSuccessMessage(''), 4000);
+  //       } else {
+  //         setError('Update failed. Please try again.');
+  //       }
+
+  //     } else {
+  //       const { mrn, ...createData } = formData;
+  //       const createdResponse = await createPatient(createData);
+
+  //       if (createdResponse.data.code === 201) {
+  //         setSuccessMessage(createdResponse.data.message || 'Patient registered successfully.');
+  //         setFormData({
+  //           first_name: '',
+  //           last_name: '',
+  //           gender: 'M',
+  //           date_of_birth: '',
+  //           phone: '',
+  //           email: '',
+  //           address: '',
+  //           insurance_provider: '',
+  //           insurance_number: '',
+  //           facility_id: '',
+  //           service_ids: [],
+  //         });
+  //         onSubmit(); // refresh patient list
+  //         setTimeout(() => setSuccessMessage(''), 4000);
+  //       } else {
+  //         setError('Registration failed. Please try again.');
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console.error('Error submitting form:', err);
+  //     setError('An unexpected error occurred.');
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -61,8 +120,9 @@ export default function PatientForm({ patient, onSubmit, viewMode = true, onClos
 
     try {
       if (patient) {
+        // --- UPDATE PATIENT ---
         const updatedResponse = await updatePatient(patient.id, formData);
-        const updatedPatient = updatedResponse.data.data; //added
+        const updatedPatient = updatedResponse.data.data;
 
         if (updatedResponse.data.code === 200) {
           setFormData({
@@ -72,34 +132,38 @@ export default function PatientForm({ patient, onSubmit, viewMode = true, onClos
           });
           setIsEditMode(false);
           setSuccessMessage(updatedResponse.data.message || 'Patient updated successfully.');
-          onSubmit(updatedPatient);// added
-          // Auto-clear success message after 4 seconds
+          onSubmit(updatedPatient);
           setTimeout(() => setSuccessMessage(''), 4000);
         } else {
           setError('Update failed. Please try again.');
         }
-
       } else {
+        // --- CREATE PATIENT ---
         const { mrn, ...createData } = formData;
         const createdResponse = await createPatient(createData);
 
         if (createdResponse.data.code === 201) {
           setSuccessMessage(createdResponse.data.message || 'Patient registered successfully.');
-          setFormData({
-            first_name: '',
-            last_name: '',
-            gender: 'M',
-            date_of_birth: '',
-            phone: '',
-            email: '',
-            address: '',
-            insurance_provider: '',
-            insurance_number: '',
-            facility_id: '',
-            service_ids: [],
-          });
-          onSubmit(); // refresh patient list
-          setTimeout(() => setSuccessMessage(''), 4000);
+
+          // Delay clearing the form until after navigation
+          setTimeout(() => {
+            setFormData({
+              first_name: '',
+              last_name: '',
+              gender: 'M',
+              date_of_birth: '',
+              phone: '',
+              email: '',
+              address: '',
+              insurance_provider: '',
+              insurance_number: '',
+              facility_id: '',
+              service_ids: [],
+            });
+            setSuccessMessage('');
+          }, 3000); 
+
+          onSubmit(); 
         } else {
           setError('Registration failed. Please try again.');
         }
@@ -116,6 +180,29 @@ export default function PatientForm({ patient, onSubmit, viewMode = true, onClos
   const handleEdit = () => {
     setIsEditMode(true);
   };
+
+  const handleDelete = async () => {
+    try {
+      const res = await deletePatient(patient.id);
+      if (res.data.status === true || res.data.code === 200) {
+        setSuccessMessage(res.data.message || 'Patient deleted successfully.');
+        setTimeout(() => {
+          setShowDeleteConfirm(false);
+          if (onDelete) {
+            onDelete(patient.id); // ✅ notify parent to remove from list
+          } else {
+            onClose(); // fallback
+          }
+        }, 1500);
+      } else {
+        setError(res.data.message || 'Failed to delete patient.');
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+      setError('An unexpected error occurred while deleting.');
+    }
+  };
+
 
   const facilityName = facilities.find(f => f.id === formData.facility_id)?.name || 'N/A';
   const serviceNames = formData.service_ids
@@ -347,12 +434,42 @@ export default function PatientForm({ patient, onSubmit, viewMode = true, onClos
             <label className="block text-sm font-medium text-text">Services</label>
             <p className="mt-1 p-2 bg-gray-100 rounded">{serviceNames}</p>
           </div>
-          <button
-            onClick={handleEdit}
-            className="mt-4 bg-primary text-white px-4 py-2 rounded hover:bg-opacity-90"
-          >
-            Edit
-          </button>
+          <div className="flex gap-4 mt-4">
+            <button
+              onClick={handleEdit}
+              className="bg-primary text-white px-4 py-2 rounded hover:bg-opacity-90"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-opacity-90"
+            >
+              Delete
+            </button>
+          </div>
+
+        </div>
+      )}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+            <h2 className="text-lg font-semibold mb-4">Are you sure you want to delete this patient?</h2>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={handleDelete}
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-opacity-80"
+              >
+                Yes, Delete
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-opacity-80"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

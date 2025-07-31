@@ -15,6 +15,7 @@ export default function PatientList({ onEdit }) {
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
 
+
   // useCallback ensures fetchPatients is stable for useEffect dependencies
   const fetchPatients = useCallback(() => {
     if (search) {
@@ -134,6 +135,30 @@ export default function PatientList({ onEdit }) {
         </div>
       )}
 
+      {/* <Modal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        title="Patient Details"
+      >
+        <PatientForm
+          patient={selectedPatient}
+          onSubmit={(updatedPatient) => {
+            if (updatedPatient) {
+              // updated patient (after edit)
+              setPatients(prev =>
+                prev.map(p => (p.id === updatedPatient.id ? updatedPatient : p))
+              );
+            } else if (selectedPatient) {
+              // patient was deleted → remove from list
+              setPatients(prev => prev.filter(p => p.id !== selectedPatient.id));
+            } else {
+              fetchPatients(); // fallback
+            }
+          }}
+          viewMode={true}
+          onClose={handleModalClose}
+        />
+      </Modal> */}
       <Modal
         isOpen={isModalOpen}
         onClose={handleModalClose}
@@ -143,16 +168,23 @@ export default function PatientList({ onEdit }) {
           patient={selectedPatient}
           onSubmit={(updatedPatient) => {
             if (updatedPatient) {
+              // Patient was updated
               setPatients(prev =>
                 prev.map(p => (p.id === updatedPatient.id ? updatedPatient : p))
               );
-            } else {
-              fetchPatients();
             }
           }}
+          onDelete={(id) => {
+            // Patient was deleted
+            setPatients(prev => prev.filter(p => p.id !== id));
+            setIsModalOpen(false);
+            setSelectedPatient(null);
+          }}
           viewMode={true}
+          onClose={handleModalClose}
         />
       </Modal>
+
     </div>
   );
 }
