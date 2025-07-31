@@ -7,7 +7,7 @@ This is the frontend for the **Electronic Medical Records (EMR)** system built w
 ## 🚀 Features
 
 - Register new patients  
-- View and edit existing patient information  
+- View, edit and delete existing patient information  
 - Modal-based UI for better experience  
 - Pagination and search  
 - Success/error handling  
@@ -34,6 +34,9 @@ Make sure you have the following installed:
 - A running instance of the [EMR Django Backend](https://github.com/Bwire2010/EMR-Patient-Registration-System-Backend)
 
 ---
+## Deployed Link
+https://emr-patient-registration-system-fro.vercel.app/login
+
 
 ## 🔧 Installation & Setup
 
